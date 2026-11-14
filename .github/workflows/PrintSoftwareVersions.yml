@@ -1,0 +1,33 @@
+name: PrintSoftwareVersions
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  software:
+    name: Software versions
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Print software versions and product name
+        run: |
+          node --version
+          npm --version
+          node ProgramCode.js
+
+  database:
+    name: PostgreSQL version
+    needs: software
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print PostgreSQL server version
+        run: docker run --rm postgres:16 postgres --version
