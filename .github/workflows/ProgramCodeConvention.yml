@@ -1,0 +1,40 @@
+name: ProgramCodeConvention
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      target_file:
+        description: File to check (Modified must fail)
+        required: true
+        default: ProgramCode.js
+        type: choice
+        options:
+          - ProgramCode.js
+          - ProgramCodeModified.js
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Check selected file
+    runs-on: ubuntu-24.04
+    env:
+      TARGET_FILE: ${{ inputs.target_file || 'ProgramCode.js' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install Biome from lockfile
+        run: npm ci
+
+      - name: Print linter version
+        run: npx --no-install biome --version
+
+      - name: Check code convention
+        run: npx --no-install biome ci "$TARGET_FILE"
