@@ -1,0 +1,39 @@
+name: DataSchemaCodeConvention
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      target_file:
+        description: File to check (Modified must fail)
+        required: true
+        default: DataSchema.sql
+        type: choice
+        options:
+          - DataSchema.sql
+          - DataSchemaModified.sql
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Check selected file
+    runs-on: ubuntu-24.04
+    env:
+      TARGET_FILE: ${{ inputs.target_file || 'DataSchema.sql' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SQLFluff
+        run: python -m pip install -r requirements.txt
+
+      - name: Print linter version
+        run: python -m sqlfluff --version
+
+      - name: Check code convention
+        run: python -m sqlfluff lint "$TARGET_FILE" --dialect postgres
